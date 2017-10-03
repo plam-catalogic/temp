@@ -32,7 +32,7 @@ resource_to_endpoint = {
     'association': 'endeavour/association',
     'policy': 'endeavour/policy',
     'user': 'security/user',
-    
+    'hypervisor': 'hypervisor',
 }
 
 resource_to_listfield = {
@@ -73,7 +73,8 @@ def pretty_print(data):
 class SppSession(object):
     def __init__(self, url, username=None, password=None, sessionid=None):
         self.url = url
-        self.api_url = url + '/api'
+        self.api_url = url + '/spp/ecxngp'
+        self.ecx_url = url + '/ecx/api'
         self.username = username
         self.password = password
         self.sessionid = sessionid
@@ -93,9 +94,12 @@ class SppSession(object):
         self.conn.headers.update({'Accept': 'application/json'})
 
     def login(self):
-        r = self.conn.post("%s/endeavour/session" % self.api_url, auth=HTTPBasicAuth(self.username, self.password))
+        r = self.conn.post("%s/endeavour/session" % self.ecx_url, auth=HTTPBasicAuth(self.username, self.password))
         self.sessionid = r.json()['sessionid']
 
+    def logout(self):
+        r = self.conn.delete("%s/endeavour/session" % self.ecx_url)
+    
     def __repr__(self):
         return 'SppSession: user: %s' % self.username
 
