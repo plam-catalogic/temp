@@ -26,19 +26,16 @@ except ImportError:
 urllib3.disable_warnings()
 
 resource_to_endpoint = {
-    'job': 'endeavour/job',
-    'jobsession': 'endeavour/jobsession',
-    'log': 'endeavour/log',
-    'association': 'endeavour/association',
-    'policy': 'endeavour/policy',
-    'user': 'security/user',
-    'hypervisor': 'hypervisor',
+    'ecxhv': 'ecx/api/hypervisor',
+    'ecxsite': 'ecx/api/site',
+    'spphv': 'spp/ecxngp/hypervisor',
+    'sppsla': 'spp/ecxngp/slapolicy',
+    'storage': 'spp/ecxngp/storage',
 }
 
 resource_to_listfield = {
     'identityuser': 'users',
     'identitycredential': 'users',
-    'policy': 'policies',
 }
 
 def build_url(baseurl, restype=None, resid=None, path=None, endpoint=None):
@@ -73,8 +70,8 @@ def pretty_print(data):
 class SppSession(object):
     def __init__(self, url, username=None, password=None, sessionid=None):
         self.url = url
-        self.api_url = url + '/spp/ecxngp'
-        self.ecx_url = url + '/ecx/api'
+        self.api_url = url + '/'
+        self.ses_url = url + '/ecx/api'
         self.username = username
         self.password = password
         self.sessionid = sessionid
@@ -94,11 +91,11 @@ class SppSession(object):
         self.conn.headers.update({'Accept': 'application/json'})
 
     def login(self):
-        r = self.conn.post("%s/endeavour/session" % self.ecx_url, auth=HTTPBasicAuth(self.username, self.password))
+        r = self.conn.post("%s/endeavour/session" % self.ses_url, auth=HTTPBasicAuth(self.username, self.password))
         self.sessionid = r.json()['sessionid']
 
     def logout(self):
-        r = self.conn.delete("%s/endeavour/session" % self.ecx_url)
+        r = self.conn.delete("%s/endeavour/session" % self.ses_url)
     
     def __repr__(self):
         return 'SppSession: user: %s' % self.username

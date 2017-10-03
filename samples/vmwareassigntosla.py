@@ -4,7 +4,6 @@
 import json
 import logging
 from optparse import OptionParser
-import time
 import copy
 import sys
 #import sppclient.sdk.client as client
@@ -38,8 +37,7 @@ def get_vm_info():
     for vm in options.vms:
         vmdata = {}
         searchdata = {"name":vm,"hypervisorType":"vmware"}
-        vmsearch = client.SppAPI(session, 'hypervisor').post(url=options.host+"/ecx/api/hypervisor/search?resourceType=vm&from=hlo",
-                                                          data=searchdata)['vms']
+        vmsearch = client.SppAPI(session, 'ecxhv').post(path="/search?resourceType=vm&from=hlo", data=searchdata)['vms']
         if not vmsearch:
             logger.warning("Did not find VM " + vm)
             break
@@ -56,7 +54,7 @@ def get_vm_info():
 def get_sla_info():
     slaarray = []
     sladata = {}
-    slapols = client.SppAPI(session, 'hypervisor').get(url=options.host+"/spp/ecxngp/slapolicy/")['slapolicies']
+    slapols = client.SppAPI(session, 'sppsla').get()['slapolicies']
     for sla in slapols:
         if(sla['name'] == options.sla):
             sladata['href'] = sla['links']['self']['href']
@@ -79,11 +77,10 @@ def assign_vms_to_sla():
     assigndata['version'] = "1.0"
     assigndata['resources'] = vminfo
     assigndata['slapolicies'] = slainfo
-    resp = client.SppAPI(session, 'hypervisor').post(url=options.host+"/spp/ecxngp/hypervisor?action=applySLAPolicies",
-                                                     data=assigndata)
+    resp = client.SppAPI(session, 'spphv').post(path='?action=applySLAPolicies', data=assigndata)
     logger.info("VMs are now assigned")
 
-
+validate_input()
 session = client.SppSession(options.host, options.username, options.password)
 session.login()
 assign_vms_to_sla()
