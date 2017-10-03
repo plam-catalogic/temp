@@ -21,38 +21,24 @@ except ImportError:
     # Python 2
     import httplib as http_client
 
-# http://stackoverflow.com/questions/10588644/how-can-i-see-the-entire-http-request-thats-being-sent-by-my-python-application
 # Uncomment this to see requests and responses.
-# TODO: We need better way and we should log requests and responses in
-# log file.
 # http_client.HTTPConnection.debuglevel = 1
 urllib3.disable_warnings()
 
 resource_to_endpoint = {
     'job': 'endeavour/job',
-	'jobsession': 'endeavour/jobsession',
+    'jobsession': 'endeavour/jobsession',
     'log': 'endeavour/log',
     'association': 'endeavour/association',
-    'workflow': 'spec/storageprofile',
     'policy': 'endeavour/policy',
     'user': 'security/user',
-    'resourcepool': 'security/resourcepool',
-    'role': 'security/role',
-    'identityuser': 'identity/user',
-    'identitycredential': 'identity/user',
-    'appserver': 'appserver',
-    'oracle': 'application/oracle',
-    'site': 'site',
+    
 }
 
 resource_to_listfield = {
     'identityuser': 'users',
     'identitycredential': 'users',
     'policy': 'policies',
-    'ldap': 'ldapServers',
-    'pure': 'purestorages',
-    'workflow': 'storageprofiles',
-    'resourcepool': 'resourcePools',
 }
 
 def build_url(baseurl, restype=None, resid=None, path=None, endpoint=None):
@@ -202,105 +188,6 @@ class SppAPI(object):
         return self.spp_session.put(restype=self.restype, resid=resid, path=path, data=data,
                                      params=params, url=url)
 
-class JobAPI(SppAPI):
-    def __init__(self, spp_session):
-        super(JobAPI, self).__init__(spp_session, 'job')
-
-    # TODO: May need to check this API seems to return null instead of current status
-    # Can use lastSessionStatus property in the job object for now
-    def status(self, jobid):
-        return self.spp_session.get(restype=self.restype, resid=jobid, path='status')
-
-    # TODO: Accept a callback that can be called every time job status is polled.
-    # The process of job start is different depending on whether jobs have storage
-    # workflows.
-    def run(self, jobid, workflowid=None):
-        job = self.spp_session.get(restype=self.restype, resid=jobid)
-
-        links = job['links']
-        if 'start' not in links:
-            raise Exception("'start' link not found for job: %d" % jobid)
-
-        start_link = links['start']
-        reqdata = {}
-
-        if 'schema' in start_link:
-            # The job has storage profiles.
-            schema_data = self.spp_session.get(url=start_link['schema'])
-            workflows = schema_data['parameter']['actionname']['values']
-            if not workflows:
-                raise Exception("No workflows for job: %d" % jobid)
-            if len(workflows) > 1:
-                if(workflowid is None):
-                    raise Exception("Workflow ID not provided")
-                else:
-                    reqdata["actionname"] = workflowid
-            else:
-                reqdata["actionname"] = workflows[0]['value']
-
-        return self.spp_session.post(url=start_link['href'], data=reqdata)
-
-    def get_log_entries(self, jobsession_id, page_size=1000, page_start_index=0):
-        logging.info("*** get_log_entries: jobsession_id = %s, page_start_index: %s ***" % (jobsession_id, page_start_index))
-
-        resp = self.spp_session.get(restype='log', path='job',
-                                    params={'pageSize': page_size, 'pageStartIndex': page_start_index,
-                                            'sort': '[{"property":"logTime","direction":"ASC"}]',
-                                            'filter': '[{"property":"jobsessionId","value":"%s"}]'%jobsession_id})
-
-        logging.info("*** get_log_entries:     Received %d entries..." % len(resp['logs']))
-
-        return resp['logs']
-
-class UserIdentityAPI(SppAPI):
-    def __init__(self, spp_session):
-        super(UserIdentityAPI, self).__init__(spp_session, 'identityuser')
-
-    def create(self, data):
-        return self.post(data=data)
-
-class AppserverAPI(SppAPI):
-    def __init__(self, spp_session):
-        super(AppserverAPI, self).__init__(spp_session, 'appserver')
-
-class VsphereAPI(SppAPI):
-    def __init__(self, spp_session):
-        super(VsphereAPI, self).__init__(spp_session, 'vsphere')
-
-class ResProviderAPI(SppAPI):
-    # Credential info is passed in different field names so we need to maintain
-    # the mapping.
-    user_field_name_map = {"appserver": "osuser", "purestorage": "user", "emcvnx": "user"}
-
-    # Resource type doesn't always correspond to API so we need a map.
-    res_api_map = {"purestorage": "pure"}
-
-    def __init__(self, spp_session, restype):
-        super(ResProviderAPI, self).__init__(spp_session, ResProviderAPI.res_api_map.get(restype, restype))
-
-    def register(self, name, host, osuser_identity, appType=None, osType=None, catalog=True, ssl=True, vsphere_id=None):
-        osuser_field = ResProviderAPI.user_field_name_map.get(self.restype, 'user')
-        reqdata = {
-            "name": name, "hostAddress": host, "addToCatJob": catalog,
-        }
-
-        reqdata[osuser_field] = {
-            "href": osuser_identity['links']['self']['href']
-        }
-
-        if vsphere_id:
-            reqdata["serverType"] = "virtual"
-            reqdata["vsphereId"] = vsphere_id
-
-        if appType:
-            reqdata["applicationType"] = appType
-            reqdata["useKeyAuthentication"] = False
-
-        if osType:
-            reqdata["osType"] = osType
-
-        return self.post(data=reqdata)
-
 class AssociationAPI(SppAPI):
     def __init__(self, spp_session):
         super(AssociationAPI, self).__init__(spp_session, 'association')
@@ -314,16 +201,3 @@ class LogAPI(SppAPI):
 
     def download_logs(self, outfile=None):
         return self.stream_get(path="download/diagnostics", outfile=outfile)
-
-class OracleAPI(SppAPI):
-    def __init__(self, spp_session):
-        super(OracleAPI, self).__init__(spp_session, 'oracle')
-        
-    def get_instances(self):
-        return self.get(path="oraclehome")
-        
-    def get_databases_in_instance(self, instanceid):
-        return self.get(path="oraclehome/%s/database" % instanceid)
-
-    def get_database_copy_versions(self, instanceid, databaseid):
-        return self.get(path="oraclehome/%s/database/%s" % (instanceid, databaseid) + "/version")
