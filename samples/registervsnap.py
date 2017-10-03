@@ -6,9 +6,7 @@ import logging
 from optparse import OptionParser
 import copy
 import sys
-#import sppclient.sdk.client as client
-import imp
-client = imp.load_source('client', '../sppclient/sdk/client.py')
+import sppclient.sdk.client as client
 
 logger = logging.getLogger('logger')
 logger.setLevel(logging.INFO)
