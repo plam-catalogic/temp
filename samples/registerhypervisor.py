@@ -50,7 +50,7 @@ def build_hypervisor():
         sys.exit(2)
     
     if(options.hvport is not None):
-        hvinfo['portNumber'] = options.hvport
+        hvinfo['portNumber'] = int(options.hvport)
     elif(hvinfo['type'] == "hyperv"):
         hvinfo['portNumber'] = 5985
     else:
