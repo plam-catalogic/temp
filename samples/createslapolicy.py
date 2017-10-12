@@ -2,7 +2,7 @@
 # Script to create a new SLA policy in SPP
 # Use createslapolicy.py -h for help
 # command example:
-# python createslapolicy.py --host="https://172.20.49.49" --user="admin" --pass="password123" --slaname="Iron" --slasite="Primary" --rettype="days" --retval=15 --freqtype="hourly" --freqval="1" --starttime="10/25/2017 03:45"
+# python createslapolicy.py --host="https://172.20.49.49" --user="admin" --pass="password123" --slaname="Iron" --slasite="Primary" --rettype="days" --retval=15 --freqtype="hourly" --freqval="1" --starttime="10/13/2017 03:45"
 #
 
 import json
@@ -12,7 +12,7 @@ import copy
 import sys
 import sppclient.sdk.client as client
 import datetime
-
+logging.basicConfig()
 logger = logging.getLogger('logger')
 logger.setLevel(logging.INFO)
 
@@ -87,13 +87,15 @@ def build_frequency():
         frequency['frequency'] = int(options.freqval)
         frequency['activateDate'] = build_start_date()
     elif("WEEK" in options.freqtype.upper()):
-        frequency['type'] = "DAILY"
+        frequency['type'] = "WEEKLY"
         frequency['frequency'] = int(options.freqval)
         frequency['activateDate'] = build_start_date()
+        frequency['dowList'] = build_weekly_dowlist(frequency['activateDate'])
     elif("MONTH" in options.freqtype.upper()):
-        frequency['type'] = "DAILY"
+        frequency['type'] = "MONTHLY"
         frequency['frequency'] = int(options.freqval)
         frequency['activateDate'] = build_start_date()
+        frequency['domList'] = build_monthly_domlist(frequency['activateDate'])
     else:
         logger.error("Invalid frequency type, must be minute, hour, day, week or month")
         session.logout()
@@ -107,13 +109,38 @@ def build_start_date():
     starttime = int(sdt.strftime("%s"))*1000
     return starttime
 
+def build_weekly_dowlist(adate):
+    dowlist = [False,False,False,False,False,False,False,False]
+    adatedt = datetime.datetime.utcfromtimestamp(adate/1000)
+    if(adatedt.weekday() == 6):
+        dowlist[1] = True
+    elif(adatedt.weekday() == 0):
+        dowlist[2] = True
+    elif(adatedt.weekday() == 1):
+        dowlist[3] = True
+    elif(adatedt.weekday() == 2):
+        dowlist[4] = True
+    elif(adatedt.weekday() == 3):
+        dowlist[5] = True
+    elif(adatedt.weekday() == 4):
+        dowlist[6] = True
+    elif(adatedt.weekday() == 5):
+        dowlist[7] = True
+    return dowlist
+
+def build_monthly_domlist(adate):
+    domlist = [False] * 32
+    adatedt = datetime.datetime.utcfromtimestamp(adate/1000)
+    domlist[adatedt.day] = True
+    return domlist
+
 def create_sla_policy(slainfo):
     try:
         response = client.SppAPI(session, 'sppsla').post(data=slainfo)
         logger.info("SLA Policy " + options.slaname + " is created")
     except client.requests.exceptions.HTTPError as err:
         errmsg = json.loads(err.response.content)
-        logger.error(errmsg['response']['description'])
+        logger.error(errmsg['response'])
 
 validate_input()
 session = client.SppSession(options.host, options.username, options.password)
