@@ -52,7 +52,7 @@ def build_sla_policy():
     return slainfo
 
 def build_site():
-    sites = client.SppAPI(session, 'ecxsite').get()['sites']
+    sites = client.SppAPI(session, 'coresite').get()['sites']
     for site in sites:
         if(site['name'].upper() == options.slasite.upper()):
             return site['name']

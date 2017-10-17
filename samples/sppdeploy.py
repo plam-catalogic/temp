@@ -45,7 +45,7 @@ def wait_for_deployment():
 
 def call_session_options():
     hdrs = {'Content-Type': 'application/json','Accept': 'application/json'}
-    r = requests.options(options.host + '/ecx/api/endeavour/session', timeout=None, verify=False)
+    r = requests.options(options.host + '/core/api/endeavour/session', timeout=None, verify=False)
     if(r.status_code is not 200):
         return False
     else:
@@ -56,7 +56,7 @@ def change_password():
     hdrs = {'Content-Type': 'application/json','Accept': 'application/json'}
     payload = {'changePassword': 'true'}
     body = {"newPassword": options.password}
-    r = requests.post(options.host + '/ecx/api/endeavour/session', json=body,
+    r = requests.post(options.host + '/core/api/endeavour/session', json=body,
                       auth=requests.auth.HTTPBasicAuth('admin','password'),
                       verify=False, headers=hdrs, params=payload)
     return r.json()['sessionid']
@@ -64,7 +64,7 @@ def change_password():
 def init_onboard_vsnap():
     logger.info("Initializing onboard vsnap provider")
     initbody = {'async': True}
-    response = client.SppAPI(session, 'ecxstorage').post(path='/2000/management?action=init', data=initbody)
+    response = client.SppAPI(session, 'corestorage').post(path='/2000/management?action=init', data=initbody)
     return response
 
 validate_input()

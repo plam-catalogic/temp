@@ -42,7 +42,7 @@ def build_vm_source():
 def get_vm_restore_info(vm):
     vmdata = {}
     searchdata = {"name":vm,"hypervisorType":"vmware"}
-    vmsearch = client.SppAPI(session, 'ecxhv').post(path="/search?resourceType=vm&from=recovery", data=searchdata)['vms']
+    vmsearch = client.SppAPI(session, 'corehv').post(path="/search?resourceType=vm&from=recovery", data=searchdata)['vms']
     if not vmsearch:
         logger.warning("Did not find recoverable VM " + vm)
         return None

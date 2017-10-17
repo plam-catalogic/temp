@@ -26,13 +26,13 @@ except ImportError:
 urllib3.disable_warnings()
 
 resource_to_endpoint = {
-    'ecxhv': 'ecx/api/hypervisor',
-    'ecxsite': 'ecx/api/site',
+    'corehv': 'core/api/hypervisor',
+    'coresite': 'core/api/site',
     'spphv': 'spp/ecxngp/hypervisor',
     'sppsla': 'spp/ecxngp/slapolicy',
     'storage': 'spp/ecxngp/storage',
-    'ecxstorage': 'ecx/api/storage',
-    'endeavour': 'ecx/api/endeavour',
+    'corestorage': 'core/api/storage',
+    'endeavour': 'core/api/endeavour',
 }
 
 resource_to_listfield = {
@@ -73,7 +73,7 @@ class SppSession(object):
     def __init__(self, url, username=None, password=None, sessionid=None):
         self.url = url
         self.api_url = url + ''
-        self.ses_url = url + '/ecx/api'
+        self.ses_url = url + '/core/api'
         self.username = username
         self.password = password
         self.sessionid = sessionid

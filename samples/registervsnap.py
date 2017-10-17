@@ -32,7 +32,7 @@ def validate_input():
         sys.exit(2)
 
 def find_site_by_name():
-    sites = client.SppAPI(session, 'ecxsite').get()['sites']
+    sites = client.SppAPI(session, 'coresite').get()['sites']
     for site in sites:
         if(site['name'].upper() == options.vssite.upper()):
             return site['id']

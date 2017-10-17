@@ -35,7 +35,7 @@ def get_vm_info():
     for vm in options.vms:
         vmdata = {}
         searchdata = {"name":vm,"hypervisorType":"vmware"}
-        vmsearch = client.SppAPI(session, 'ecxhv').post(path="/search?resourceType=vm&from=hlo", data=searchdata)['vms']
+        vmsearch = client.SppAPI(session, 'corehv').post(path="/search?resourceType=vm&from=hlo", data=searchdata)['vms']
         if not vmsearch:
             logger.warning("Did not find VM " + vm)
             break
