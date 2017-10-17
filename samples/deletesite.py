@@ -30,7 +30,7 @@ def validate_input():
 def find_site_by_name():
     sites = client.SppAPI(session, 'coresite').get()['sites']
     for site in sites:
-        if(site['name'].upper() == options.vssite.upper()):
+        if(site['name'].upper() == options.sitename.upper()):
             return site['id']
     logger.error("Site name not found")
     session.logout()
@@ -39,7 +39,7 @@ def find_site_by_name():
 def delete_site():
     siteid = find_site_by_name()
     try:
-        response = client.SppAPI(session, 'coresite').delete(path=siteid)
+        response = client.SppAPI(session, 'coresite').delete(resid=siteid)
         print options.sitename + " is deleted"
     except client.requests.exceptions.HTTPError as err:
         errmsg = json.loads(err.response.content)
