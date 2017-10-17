@@ -9,7 +9,7 @@ from optparse import OptionParser
 import copy
 import sys
 import sppclient.sdk.client as client
-
+logging.basicConfig()
 logger = logging.getLogger('logger')
 logger.setLevel(logging.INFO)
 
