@@ -26,13 +26,14 @@ def validate_input():
 
 def get_vsnap_status():
     try:
-        vsnaps = client.SppAPI(session, 'corestorage').get()['storages']
-        if(len(vsnaps) < 1):
+        storages = client.SppAPI(session, 'corestorage').get()['storages']
+        if(len(storages) < 1):
             print "No vSnap storage providers found"
             session.logout()
             sys.exit(2)
-        for vsnap in vsnaps:
-            print "vSnap provider " + vsnap['name'] + " is " + vsnap['initializeStatus']
+        for storage in storages:
+            if(storage['type'] == "vsnap"):
+                print "vSnap provider " + storage['name'] + " is " + storage['initializeStatus']
     except:
         print "Error connecting to SPP host"
     
