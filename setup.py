@@ -19,17 +19,17 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.45',
+    version='0.46',
 
     description="A client for IBM Spectrum Protect Plus. ",
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/catalogicsoftware/sppclient',
+    url='https://github.com/ibmspp/sppclient',
 
     # Author details
-    author='Catalogic Software',
-    author_email='bjones@catalogicsoftware.com',
+    author='IBM',
+    author_email='ben.jones@ibm.com',
 
     # Choose your license
     license='Apache License 2.0',
